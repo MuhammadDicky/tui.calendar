@@ -1,6 +1,6 @@
 /*!
  * TOAST UI Calendar
- * @version 1.15.2 | Wed Jan 05 2022
+ * @version 1.15.2 | Wed Feb 16 2022
  * @author NHN FE Development Lab <dl_javascript@nhn.com>
  * @license MIT
  */
@@ -674,17 +674,32 @@
   visibility: hidden;
 }
 .tui-full-calendar-section-title {
-  width: calc(100% - 36px);
-  padding-right: 4px;
+  display: block;
+}
+.tui-full-calendar-section-request-by {
+  display: block;
+  width: 352px !important;
 }
 .tui-full-calendar-section-title input {
-  width: 365px;
+  width: 400px;
+}
+.tui-full-calendar-section-request-by input {
+  width: 290px !important;
 }
 .tui-full-calendar-button.tui-full-calendar-section-private {
   height: 32px;
   padding: 8px;
   font-size: 0;
   margin-left: 4px;
+}
+.tui-full-calendar-button.tui-full-calendar-section-clear-date {
+  height: 32px;
+  padding: 8px;
+  font-size: 0;
+  margin-left: 4px;
+}
+.tui-full-calendar-button.tui-full-calendar-section-clear-date .tui-full-calendar-ic-clear-date {
+  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAAAAXNSR0IArs4c6QAAAQpJREFUKBVjYCARMCKrNzU1tf/3718lUMwQiP8yMjKeYWJi6j516tRhExOThjNnzjTANQAFqv///98CVHQPSO8A0ixATa5AtjyQPgDETmfPngULMpiZmbn//fu3BSg4B6ggCyjxG8hm8PT0ZH/9+vUJoJgTiA8CTCACqDgXaOJ9Xl7eTJhikDhQcSVQsQGITT8A9rSxsfF/mJVApzWCQgPGd3BwYPny5cstoNOuAZ3rAwoJOAAqviAqKtoOEwAaxPr58+dpQL4iEGeAxJFt2AfkOwA1PQTSu4Em/gGyPYC0EpCuAdraCtIADiWgQCPQOmdmZmYHoNgVoCJfIB0CpG8DI84BphgoRjoAAAzgdELI91E5AAAAAElFTkSuQmCC) no-repeat;
 }
 .tui-full-calendar-section-private.tui-full-calendar-public .tui-full-calendar-ic-private {
   background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAYAAAAfSC3RAAAAAXNSR0IArs4c6QAAAKdJREFUKBVjYCATMKLri46Olvn9+3fX////HUByjIyMB1hZWcuWLl36BFktikaQpl+/fl0EKhBCVgRkv2NjY9NH1syErABkE1TTdqBCWRAG8reDxKBycOUoGmHOA2pIA5kOwiA2SDVMDq4TmREaGvofhJHFcLHhfgwLC9sKNNULl0KQODCgtq1atcobxIY7lZAmkGJkNXCNIAlSwIjSCApqIgJnK0wNALoOPwSpOcq0AAAAAElFTkSuQmCC) no-repeat;
@@ -1105,6 +1120,37 @@ input[type='checkbox'].tui-full-calendar-checkbox-round + span {
   z-index: 1;
   border-color: #d5d5d5;
 }
+.tui-full-calendar-popup-section-item.auto-search-wrapper {
+  display: inline-block;
+  width: inherit;
+}
+.tui-full-calendar-popup-section-item.auto-search-wrapper input {
+  border: none;
+  padding: 0;
+  padding-left: 8px;
+}
+.tui-full-calendar-popup-section-item.auto-search-wrapper input:focus {
+  border: none;
+}
+.tui-full-calendar-popup-section-item.auto-search-wrapper .auto-clear:before {
+  height: 20px;
+  width: 20px;
+}
+.tui-full-calendar-popup-section-item.auto-search-wrapper .auto-results-wrapper {
+  border: 1px solid #d5d5d5;
+  border-top: none;
+  margin-top: 0;
+  margin-left: -13px;
+  width: inherit;
+  border-radius: 0 0 2px 2px;
+}
+.tui-full-calendar-popup-section-item.auto-search-wrapper .auto-results-wrapper ul li {
+  font-size: 12px;
+  line-height: 1.4;
+}
+.tui-full-calendar-popup-section-item.auto-search-wrapper .auto-results-wrapper ul li.loupe:before {
+  top: 10px;
+}
 .tui-full-calendar-icon {
   width: 14px;
   height: 14px;
@@ -1137,6 +1183,9 @@ input[type='checkbox'].tui-full-calendar-checkbox-round + span {
 }
 .tui-full-calendar-icon.tui-full-calendar-ic-user-b {
   background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAAAAXNSR0IArs4c6QAAAJpJREFUKBVjYKA1YES3wMTExBMoNgsqnnbmzJntyGqYkDlQ9qz////LgDCQD9MIV4ZNA1wSGwObhjRGRsYnIAzUkIZNE0licE+bm5tr/fnzJx1osjPQBFmoKY+BftnLwsIy8+TJk9dAYmANxsbGoUD2YiBmBwliAT+BYrFnz55dDfNDO1AAl2KQfpAcSA0DTIMyiEMAEKMG0wgAolIjcM7Tjm8AAAAASUVORK5CYII=);
+}
+.tui-full-calendar-icon.tui-full-calendar-ic-user-full {
+  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAAAAXNSR0IArs4c6QAAAJpJREFUKBVjYKA1YES3wMTExBMoNgsqnnbmzJntyGqYkDlQ9qz////LgDCQD9MIV4ZNA1wSGwObhjRGRsYnIAzUkIZNE0licE+bm5tr/fnzJx1osjPQBFmoKY+BftnLwsIy8+TJk9dAYmANxsbGoUD2YiBmBwliAT+BYrFnz55dDfNDO1AAl2KQfpAcSA0DTIMyiEMAEKMG0wgAolIjcM7Tjm8AAAAASUVORK5CYII=) no-repeat;
 }
 .tui-full-calendar-icon.tui-full-calendar-ic-edit {
   background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAAAAXNSR0IArs4c6QAAAMdJREFUKBVjYCARMOJTb2xsLMfIyBjLysq64Pjx409BapnwaQDKzf7//3/L79+/D1tbW0uB1LJg02BmZqYIVPgdKBf/79+//UC2xs+fP8OB/H4MG0CK//79ewCkEGQYExOTI5DawMnJuQTER/EDTDFQXA4kCQQ3QBpOnz79AsJF8gMWxTA1KDTYBhyKMUwH6WSysrKSB7kZyIY5AySOVTFIggno+5VAmijFYA1AwhzEgAKcJsMUwIMVGKPH2NnZ7ZFDBKYImQYAuO5YIMgk39gAAAAASUVORK5CYII=);
