@@ -97,6 +97,12 @@ function Schedule() {
     this.isAllDay = false;
 
     /**
+     * schedule created date
+     * @type {TZDate}
+     */
+    this.createdAt = null;
+
+    /**
      * schedule start
      * @type {TZDate}
      */
@@ -228,6 +234,18 @@ function Schedule() {
      */
     this.raw = null;
 
+    /**
+     * Additional option ID
+     * @type {string|number}
+     */
+    this.additionalOptionId = null;
+
+    /**
+     * RequestBy object
+     * @type {object.RequestBy}
+     */
+    this.requestBy = null;
+
     // initialize model id
     util.stamp(this);
 }
@@ -291,6 +309,23 @@ Schedule.prototype.init = function(options) {
     this.goingDuration = options.goingDuration || 0;
     this.comingDuration = options.comingDuration || 0;
     this.state = options.state || '';
+    this.additionalOptionId = util.isExisty(options.additionalOptionId) ? options.additionalOptionId : null;
+
+    if (util.isExisty(options.requestBy) && Object.isObject(options.requestBy)) {
+        this.requestBy = {
+            id: options.requestBy.id,
+            text: options.requestBy.text,
+            full: options.requestBy.full
+        };
+    }
+
+    // custom property
+    this.createdAt = options.createdAt ? new TZDate(options.createdAt) : null;
+
+    if (this.createdAt && !options.start && !options.end) {
+        options.start = options.createdAt;
+        options.end = options.createdAt;
+    }
 
     if (this.isAllDay) {
         this.setAllDayPeriod(options.start, options.end);

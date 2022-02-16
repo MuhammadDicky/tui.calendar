@@ -272,11 +272,15 @@ module.exports = {
 
     getScheduleChanges: function(schedule, propNames, data) {
         var changes = {};
-        var dateProps = ['start', 'end'];
+        var dateProps = ['createdAt', 'start', 'end'];
+        var isValidDateRange;
 
         util.forEach(propNames, function(propName) {
             if (dateProps.indexOf(propName) > -1) {
-                if (datetime.compare(schedule[propName], data[propName])) {
+                isValidDateRange = schedule[propName] && data[propName];
+
+                if ((isValidDateRange && datetime.compare(schedule[propName], data[propName]))
+                    || schedule[propName] !== data[propName]) {
                     changes[propName] = data[propName];
                 }
             } else if (!util.isUndefined(data[propName]) && schedule[propName] !== data[propName]) {

@@ -24,17 +24,31 @@
     visibility: hidden
 
 .{css-prefix}section-title
-    width: calc(100% - 36px)
-    padding-right: 4px
+    display: block;
+.{css-prefix}section-request-by
+    display: block;
+    width: 352px !important;
 
 .{css-prefix}section-title input
-    width: 365px
+    width: 400px
+
+.{css-prefix}section-request-by input
+    width: 290px !important
 
 .{css-prefix}button.{css-prefix}section-private
     height: 32px
     padding: 8px
     font-size: 0
     margin-left: 4px
+
+.{css-prefix}button.{css-prefix}section-clear-date
+    height: 32px
+    padding: 8px
+    font-size: 0
+    margin-left: 4px
+
+.{css-prefix}button.{css-prefix}section-clear-date .{css-prefix}ic-clear-date
+    background: url('image/ic-repeat-b.png') no-repeat
 
 .{css-prefix}section-private.{css-prefix}public .{css-prefix}ic-private
     background: url('image/ic-unlock.png') no-repeat
@@ -452,6 +466,39 @@ input[type='checkbox'].{css-prefix}checkbox-round + span
 
 /* override tui-date-picker */
 .tui-datepicker
-    left: -12px
-    z-index: 1
-    border-color: #d5d5d5
+  left: -12px
+  z-index: 1
+  border-color: #d5d5d5
+
+/* override autocomplete */
+autocomplete-prefix = '.' + css-prefix + 'popup-section-item.auto-search-wrapper'
+{autocomplete-prefix}
+  display: inline-block
+  width: inherit
+
+{autocomplete-prefix} input
+  border: none
+  padding: 0
+  padding-left: 8px
+
+{autocomplete-prefix} input:focus
+  border: none
+
+{autocomplete-prefix} .auto-clear:before
+  height: 20px
+  width: 20px
+
+{autocomplete-prefix} .auto-results-wrapper
+  border: 1px solid #d5d5d5
+  border-top: none
+  margin-top: 0
+  margin-left: -13px
+  width: inherit
+  border-radius: 0 0 2px 2px
+
+{autocomplete-prefix} .auto-results-wrapper ul li
+  font-size: 12px
+  line-height: 1.4
+
+{autocomplete-prefix} .auto-results-wrapper ul li.loupe:before
+  top: 10px

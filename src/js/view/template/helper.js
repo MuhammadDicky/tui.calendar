@@ -411,6 +411,18 @@ var helpers = {
         return 'Location';
     },
 
+    'createdDatePlaceholder-tmpl': function() {
+        return 'Created at';
+    },
+
+    'requestByPlaceholder-tmpl': function() {
+        return 'Reqeust by';
+    },
+
+    'clearCreatedDateButtonText-tmpl': function() {
+        return 'Clear';
+    },
+
     'startDatePlaceholder-tmpl': function() {
         return 'Start date';
     },

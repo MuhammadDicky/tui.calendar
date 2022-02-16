@@ -600,6 +600,7 @@ function Calendar(container, options) {
      */
     this._controller = _createController(options);
     this._controller.setCalendars(options.calendars);
+    this._controller.setAdditionalOptions(options.additionalOptions);
 
     /**
      * layout view (layout manager)

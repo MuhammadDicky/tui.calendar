@@ -233,7 +233,12 @@ module.exports = function(baseController, layoutContainer, dragHandler, options,
 
     // binding create schedules event
     if (options.useCreationPopup) {
-        createView = new ScheduleCreationPopup(layoutContainer, baseController.calendars, options.usageStatistics);
+        createView = new ScheduleCreationPopup(layoutContainer, {
+            calendars: baseController.calendars,
+            additionalOptions: baseController.additionalOptions,
+            autoCompleteConfig: baseController.autoCompleteConfig,
+            usageStatistics: options.usageStatistics
+        });
 
         onSaveNewSchedule = function(scheduleData) {
             util.extend(scheduleData, {

@@ -113,6 +113,7 @@ MonthCreation.prototype._createSchedule = function(eventData) {
      */
     this.fire('beforeCreateSchedule', {
         isAllDay: eventData.isAllDay,
+        createdAt: eventData.createdAt,
         start: eventData.start,
         end: eventData.end,
         guide: this.guide.guide,
@@ -266,7 +267,7 @@ MonthCreation.prototype._onDblClick = function(e) {
  */
 MonthCreation.prototype._onClick = function(e) {
     var self = this;
-    var eventData, range;
+    var eventData;
 
     if (!isElementWeekdayGrid(e.target) || this._disableClick) {
         return;
@@ -279,11 +280,10 @@ MonthCreation.prototype._onClick = function(e) {
         if (self._requestOnClick) {
             self.fire('monthCreationClick', eventData);
 
-            range = self._adjustStartAndEndTime(new TZDate(eventData.date), new TZDate(eventData.date));
-
             self._createSchedule({
-                start: range.start,
-                end: range.end,
+                createdAt: eventData.date,
+                start: null,
+                end: null,
                 isAllDay: false,
                 triggerEvent: eventData.triggerEvent
             });

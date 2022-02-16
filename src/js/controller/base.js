@@ -135,6 +135,18 @@ function Base(options) {
      * @type {Array.<Calendar>}
      */
     this.calendars = [];
+
+    /**
+     * Additional options
+     * @type {object.<AdditionalOptions>}
+     */
+    this.additionalOptions = [];
+
+    /**
+     * Auto complete config
+     * @type {object.<AutoCompleteConfig>}
+     */
+    this.autoCompleteConfig = util.isExisty(options.autoCompleteConfig) ? options.autoCompleteConfig : null;
 }
 
 /**
@@ -226,6 +238,7 @@ Base.prototype.createSchedules = function(dataList, silent) {
 Base.prototype.updateSchedule = function(schedule, options) {
     var start = options.start || schedule.start;
     var end = options.end || schedule.end;
+    var createdAt = options.createdAt;
 
     options = options ? sanitizeOptions(options) : {};
 
@@ -258,6 +271,14 @@ Base.prototype.updateSchedule = function(schedule, options) {
             schedule.setAllDayPeriod(start, end);
         } else {
             schedule.setTimePeriod(start, end);
+        }
+    }
+
+    if (createdAt) {
+        schedule.set('createdAt', createdAt);
+
+        if (!options.start && !options.end) {
+            schedule.setTimePeriod(createdAt, createdAt);
         }
     }
 
@@ -311,6 +332,14 @@ Base.prototype.updateSchedule = function(schedule, options) {
 
     if (options.recurrenceRule) {
         schedule.set('recurrenceRule', options.recurrenceRule);
+    }
+
+    if (options.additionalOptionId) {
+        schedule.set('additionalOptionId', options.additionalOptionId);
+    }
+
+    if (options.requestBy) {
+        schedule.set('requestBy', options.requestBy);
     }
 
     this._removeFromMatrix(schedule);
@@ -495,6 +524,14 @@ Base.prototype.setTheme = function(theme) {
  */
 Base.prototype.setCalendars = function(calendars) {
     this.calendars = calendars;
+};
+
+/**
+ * Set addtional options
+ * @param {object.<AdditionalOptions>} additionalOptions - additonal options
+ */
+Base.prototype.setAdditionalOptions = function(additionalOptions) {
+    this.additionalOptions = additionalOptions;
 };
 
 // mixin
