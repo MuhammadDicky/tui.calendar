@@ -79,6 +79,7 @@ function ScheduleCreationPopup(container, creationPopupConfig) {
     this.additionalOptions = new AdditionalOptions(additionalOptions);
     this.autoCompleteConfig = util.isExisty(creationPopupConfig.autoCompleteConfig) ?
         creationPopupConfig.autoCompleteConfig : null;
+    this._showRequestByInput = this.autoCompleteConfig;
     this._focusedDropdown = null;
     this._usageStatistics = usageStatistics;
     this._onClickListeners = [
@@ -414,6 +415,7 @@ ScheduleCreationPopup.prototype.render = function(viewModel) {
     viewModel.calendars = calendars;
     viewModel.additionalOptions = additionalOptions;
     viewModel.requestBy = this._selectedRequestBy;
+    viewModel.showRequestByInput = this._showRequestByInput;
     if (calendars.length) {
         viewModel.selectedCal = this._selectedCal = calendars[0];
     }
@@ -774,7 +776,7 @@ ScheduleCreationPopup.prototype._createAutoComplete = function() {
     var cssPrefix = config.cssPrefix;
     var autoCompleteConfig = Object.assign({}, this.autoCompleteConfig);
 
-    if (!this.autoCompleteConfig) {
+    if (!this._showRequestByInput) {
         return;
     }
 

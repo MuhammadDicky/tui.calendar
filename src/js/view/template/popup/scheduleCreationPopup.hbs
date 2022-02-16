@@ -21,12 +21,14 @@
                 <input id="{{CSS_PREFIX}}schedule-title" class="{{CSS_PREFIX}}content" placeholder="{{titlePlaceholder-tmpl}}" value="{{title}}">
             </div>
         </div>
+        {{#if showRequestByInput}}
         <div class="{{CSS_PREFIX}}popup-section">
             <div class="{{CSS_PREFIX}}popup-section-item {{CSS_PREFIX}}section-request-by auto-search-wrapper">
             <span class="{{CSS_PREFIX}}icon {{CSS_PREFIX}}ic-user-full"></span>
                 <input id="{{CSS_PREFIX}}schedule-request-by" class="{{CSS_PREFIX}}content" placeholder="{{requestByPlaceholder-tmpl}}" value="{{requestBy.text}}" autocomplete="off">
             </div>
         </div>
+        {{/if}}
         <div class="{{CSS_PREFIX}}popup-section">
             <div class="{{CSS_PREFIX}}popup-section-item {{CSS_PREFIX}}section-start-date">
                 <span class="{{CSS_PREFIX}}icon {{CSS_PREFIX}}ic-date"></span>
