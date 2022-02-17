@@ -79,7 +79,7 @@ function ScheduleCreationPopup(container, creationPopupConfig) {
     this.additionalOptions = new AdditionalOptions(additionalOptions);
     this.autoCompleteConfig = util.isExisty(creationPopupConfig.autoCompleteConfig) ?
         creationPopupConfig.autoCompleteConfig : null;
-    this._showRequestByInput = this.autoCompleteConfig;
+    this._showRequestByInput = this.autoCompleteConfig !== null && typeof this.autoCompleteConfig === 'object';
     this._focusedDropdown = null;
     this._usageStatistics = usageStatistics;
     this._onClickListeners = [
@@ -93,7 +93,7 @@ function ScheduleCreationPopup(container, creationPopupConfig) {
         this._clickClearDate.bind(this)
     ];
     this._datepickerState = {
-        createdAt: null,
+        requestAt: null,
         start: null,
         end: null,
         isAllDay: false
@@ -136,6 +136,7 @@ ScheduleCreationPopup.prototype.destroy = function() {
     }
     if (this.requestByInput) {
         this.requestByInput.destroy();
+        this.requestByInput = null;
     }
     domevent.off(this.container, 'click', this._onClick, this);
     domevent.off(document.body, 'mousedown', this._onMouseDown, this);
@@ -315,8 +316,8 @@ ScheduleCreationPopup.prototype._clickClearDate = function(target) {
     var buttonEl = domutil.hasClass(target, className) ? target : domutil.closest(target, '.' + className);
     var dateId = buttonEl ? domutil.getData(buttonEl, 'dateId') : null;
 
-    if (['created-at', 'date-range'].includes(dateId)) {
-        if (dateId === 'created-at') {
+    if (['request-at', 'date-range'].includes(dateId)) {
+        if (dateId === 'request-at') {
             this.createdDatePicker.setNull();
         } else {
             this.rangePicker.setStartDate(null);
@@ -340,13 +341,13 @@ ScheduleCreationPopup.prototype._onClickSaveSchedule = function(target) {
     var cssPrefix = config.cssPrefix;
     var title;
     var endDateEl;
-    var createdAt;
+    var requestAt;
     var startDate;
     var endDate;
     var rangeDate;
     var form;
     var isAllDay;
-    var createdAtValue;
+    var requestAtValue;
     var startDateValue;
     var endDateValue;
     var isValidDateRange;
@@ -358,11 +359,11 @@ ScheduleCreationPopup.prototype._onClickSaveSchedule = function(target) {
     title = domutil.get(cssPrefix + 'schedule-title');
     endDateEl = domutil.get(cssPrefix + 'schedule-end-date');
 
-    createdAtValue = this.createdDatePicker.getDate();
+    requestAtValue = this.createdDatePicker.getDate();
     startDateValue = this.rangePicker.getStartDate();
     endDateValue = this.rangePicker.getEndDate();
     isValidDateRange = startDateValue && endDateValue;
-    createdAt = createdAtValue ? new TZDate(createdAtValue) : createdAtValue;
+    requestAt = requestAtValue ? new TZDate(requestAtValue) : requestAtValue;
     startDate = startDateValue ? new TZDate(startDateValue) : null;
     endDate = endDateValue ? new TZDate(endDateValue) : null;
 
@@ -382,7 +383,7 @@ ScheduleCreationPopup.prototype._onClickSaveSchedule = function(target) {
     form = {
         calendarId: this._selectedCal ? this._selectedCal.id : null,
         title: title,
-        createdAt: createdAt,
+        requestAt: requestAt,
         start: isValidDateRange ? rangeDate.start : null,
         end: isValidDateRange ? rangeDate.end : null,
         isAllDay: isAllDay,
@@ -414,7 +415,7 @@ ScheduleCreationPopup.prototype.render = function(viewModel) {
     viewModel.zIndex = this.layer.zIndex + 5;
     viewModel.calendars = calendars;
     viewModel.additionalOptions = additionalOptions;
-    viewModel.requestBy = this._selectedRequestBy;
+    viewModel.requestBy = this._selectedRequestBy = null;
     viewModel.showRequestByInput = this._showRequestByInput;
     if (calendars.length) {
         viewModel.selectedCal = this._selectedCal = calendars[0];
@@ -438,7 +439,7 @@ ScheduleCreationPopup.prototype.render = function(viewModel) {
     // NOTE: Setting default start/end time when editing all-day schedule first time.
     // This logic refers to Apple calendar's behavior.
     this._setDatepickerState({
-        createdAt: viewModel.createdAt,
+        requestAt: viewModel.requestAt,
         start: viewModel.start,
         end: viewModel.end,
         isAllDay: viewModel.isAllDay
@@ -464,16 +465,17 @@ ScheduleCreationPopup.prototype.render = function(viewModel) {
  */
 ScheduleCreationPopup.prototype._makeEditModeData = function(viewModel) {
     var schedule = viewModel.schedule;
-    var title, createdAt, startDate, endDate, isAllDay;
+    var title, requestAt, startDate, endDate, isAllDay, requestBy;
     var calendars = this.calendars;
     var additionalOptions = this.additionalOptions;
 
     var id = schedule.id;
     title = schedule.title;
-    createdAt = schedule.createdAt;
+    requestAt = schedule.requestAt;
     startDate = schedule.start;
     endDate = schedule.end;
     isAllDay = schedule.isAllDay;
+    requestBy = schedule.requestBy;
 
     viewModel.selectedCal = this._selectedCal = common.find(this.calendars, function(cal) {
         return cal.id === viewModel.schedule.calendarId;
@@ -486,8 +488,8 @@ ScheduleCreationPopup.prototype._makeEditModeData = function(viewModel) {
             });
     }
 
-    if (util.isExisty(viewModel.schedule.selectedRequestBy)) {
-        this._selectedRequestBy = viewModel.schedule.selectedRequestBy;
+    if (util.isExisty(requestBy)) {
+        this._selectedRequestBy = requestBy;
     }
 
     this._schedule = schedule;
@@ -498,13 +500,14 @@ ScheduleCreationPopup.prototype._makeEditModeData = function(viewModel) {
         calendars: calendars,
         title: title,
         isAllDay: isAllDay,
-        createdAt: createdAt,
+        requestAt: requestAt,
         start: startDate,
         end: endDate,
         zIndex: this.layer.zIndex + 5,
         selectedAdditionalOption: this._selectedAdditionalOption,
         additionalOptions: viewModel.additionalOptions,
         requestBy: this._selectedRequestBy,
+        showRequestByInput: viewModel.showRequestByInput,
         isEditMode: this._isEditMode
     };
 };
@@ -728,15 +731,15 @@ ScheduleCreationPopup.prototype._setArrowDirection = function(arrow) {
  */
 ScheduleCreationPopup.prototype._createDatepicker = function() {
     var cssPrefix = config.cssPrefix;
-    var createdAt = this._datepickerState.createdAt;
+    var requestAt = this._datepickerState.requestAt;
     var start = this._datepickerState.start;
     var end = this._datepickerState.end;
     var isAllDay = this._datepickerState.isAllDay;
 
-    this.createdDatePicker = new DatePicker('#' + cssPrefix + 'createdpicker-container', {
-        date: createdAt ? new TZDate(createdAt).toDate() : null,
+    this.createdDatePicker = new DatePicker('#' + cssPrefix + 'request-datepicker-container', {
+        date: requestAt ? new TZDate(requestAt).toDate() : null,
         input: {
-            element: '#' + cssPrefix + 'schedule-created-date',
+            element: '#' + cssPrefix + 'schedule-request-date',
             format: 'yyyy-MM-dd hh:mm'
         },
         timePicker: {
@@ -744,7 +747,7 @@ ScheduleCreationPopup.prototype._createDatepicker = function() {
         }
     });
     this.createdDatePicker.on('change', function() {
-        this._setDatepickerState({createdAt: this.createdDatePicker.getDate()});
+        this._setDatepickerState({requestAt: this.createdDatePicker.getDate()});
     }.bind(this));
 
     this.rangePicker = DatePicker.createRangePicker({
@@ -773,7 +776,7 @@ ScheduleCreationPopup.prototype._createDatepicker = function() {
  * Create auto complete for input request by
  */
 ScheduleCreationPopup.prototype._createAutoComplete = function() {
-    var cssPrefix = config.cssPrefix;
+    var autoCompleteSelector = config.cssPrefix + 'schedule-request-by';
     var autoCompleteConfig = Object.assign({}, this.autoCompleteConfig);
 
     if (!this._showRequestByInput) {
@@ -820,7 +823,7 @@ ScheduleCreationPopup.prototype._createAutoComplete = function() {
         }
     });
 
-    this.requestByInput = new AutoComplete(cssPrefix + 'schedule-request-by', this.autoCompleteConfig);
+    this.requestByInput = new AutoComplete(autoCompleteSelector, this.autoCompleteConfig);
 };
 
 /**
@@ -918,11 +921,11 @@ ScheduleCreationPopup.prototype._getRangeDate = function(startDate, endDate, isA
 ScheduleCreationPopup.prototype._onClickUpdateSchedule = function(form) {
     var changes = common.getScheduleChanges(
         this._schedule,
-        ['calendarId', 'title', 'createdAt', 'start', 'end', 'isAllDay', 'additionalOptionId', 'requestBy'],
+        ['calendarId', 'title', 'requestAt', 'start', 'end', 'isAllDay', 'additionalOptionId', 'requestBy'],
         {
             calendarId: form.calendarId,
             title: form.title.value,
-            createdAt: form.createdAt,
+            requestAt: form.requestAt,
             start: form.start,
             end: form.end,
             isAllDay: form.start !== null && form.end !== null,
@@ -968,7 +971,7 @@ ScheduleCreationPopup.prototype._onClickCreateSchedule = function(form) {
     this.fire('beforeCreateSchedule', {
         calendarId: form.calendarId,
         title: form.title.value,
-        createdAt: form.createdAt,
+        requestAt: form.requestAt,
         start: form.start,
         end: form.end,
         isAllDay: form.isAllDay,

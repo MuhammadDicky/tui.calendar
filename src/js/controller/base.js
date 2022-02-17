@@ -238,7 +238,7 @@ Base.prototype.createSchedules = function(dataList, silent) {
 Base.prototype.updateSchedule = function(schedule, options) {
     var start = options.start || schedule.start;
     var end = options.end || schedule.end;
-    var createdAt = options.createdAt;
+    var requestAt = options.requestAt;
 
     options = options ? sanitizeOptions(options) : {};
 
@@ -274,11 +274,11 @@ Base.prototype.updateSchedule = function(schedule, options) {
         }
     }
 
-    if (createdAt) {
-        schedule.set('createdAt', createdAt);
+    if (requestAt) {
+        schedule.set('requestAt', requestAt);
 
         if (!options.start && !options.end) {
-            schedule.setTimePeriod(createdAt, createdAt);
+            schedule.setTimePeriod(requestAt, requestAt);
         }
     }
 

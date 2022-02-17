@@ -97,10 +97,10 @@ function Schedule() {
     this.isAllDay = false;
 
     /**
-     * schedule created date
+     * schedule request date
      * @type {TZDate}
      */
-    this.createdAt = null;
+    this.requestAt = null;
 
     /**
      * schedule start
@@ -311,7 +311,7 @@ Schedule.prototype.init = function(options) {
     this.state = options.state || '';
     this.additionalOptionId = util.isExisty(options.additionalOptionId) ? options.additionalOptionId : null;
 
-    if (util.isExisty(options.requestBy) && Object.isObject(options.requestBy)) {
+    if (util.isExisty(options.requestBy) && typeof options.requestBy === 'object') {
         this.requestBy = {
             id: options.requestBy.id,
             text: options.requestBy.text,
@@ -320,11 +320,11 @@ Schedule.prototype.init = function(options) {
     }
 
     // custom property
-    this.createdAt = options.createdAt ? new TZDate(options.createdAt) : null;
+    this.requestAt = options.requestAt ? new TZDate(options.requestAt) : null;
 
-    if (this.createdAt && !options.start && !options.end) {
-        options.start = options.createdAt;
-        options.end = options.createdAt;
+    if (this.requestAt && !options.start && !options.end) {
+        options.start = options.requestAt;
+        options.end = options.requestAt;
     }
 
     if (this.isAllDay) {

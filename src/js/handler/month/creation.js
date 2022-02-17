@@ -113,7 +113,7 @@ MonthCreation.prototype._createSchedule = function(eventData) {
      */
     this.fire('beforeCreateSchedule', {
         isAllDay: eventData.isAllDay,
-        createdAt: eventData.createdAt,
+        requestAt: eventData.requestAt,
         start: eventData.start,
         end: eventData.end,
         guide: this.guide.guide,
@@ -281,7 +281,7 @@ MonthCreation.prototype._onClick = function(e) {
             self.fire('monthCreationClick', eventData);
 
             self._createSchedule({
-                createdAt: eventData.date,
+                requestAt: eventData.date,
                 start: null,
                 end: null,
                 isAllDay: false,

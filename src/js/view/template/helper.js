@@ -411,8 +411,8 @@ var helpers = {
         return 'Location';
     },
 
-    'createdDatePlaceholder-tmpl': function() {
-        return 'Created at';
+    'requestDatePlaceholder-tmpl': function() {
+        return 'Request at';
     },
 
     'requestByPlaceholder-tmpl': function() {

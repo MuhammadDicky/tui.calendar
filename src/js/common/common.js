@@ -272,7 +272,7 @@ module.exports = {
 
     getScheduleChanges: function(schedule, propNames, data) {
         var changes = {};
-        var dateProps = ['createdAt', 'start', 'end'];
+        var dateProps = ['requestAt', 'start', 'end'];
         var isValidDateRange;
 
         util.forEach(propNames, function(propName) {
