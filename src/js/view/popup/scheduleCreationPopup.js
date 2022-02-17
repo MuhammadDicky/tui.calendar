@@ -20,8 +20,6 @@ var TZDate = timezone.Date;
 var MAX_WEEK_OF_MONTH = 6;
 
 function AdditionalOptions(options) {
-    var defaultSelectedOption;
-
     if (!options || typeof options !== 'object') {
         options = {};
     }
@@ -40,10 +38,9 @@ function AdditionalOptions(options) {
         };
     }.bind(this)) : [];
 
-    defaultSelectedOption = this.isValid && options.defaultSelected ? common.find(this.options, function(option) {
+    this.defaultSelected = this.isValid && options.defaultSelected ? common.find(this.options, function(option) {
         return String(option.id) === options.defaultSelected;
-    }) : null;
-    this.defaultSelected = defaultSelectedOption ? options.defaultSelected : this.options[0];
+    }) : this.options[0];
     this.length = this.isValid ? options.options.length : 0;
     this.dataProperty = 'additional';
 }
@@ -342,6 +339,8 @@ ScheduleCreationPopup.prototype._onClickSaveSchedule = function(target) {
     var title;
     var endDateEl;
     var requestAt;
+    var requestBy;
+    var requestByEl;
     var startDate;
     var endDate;
     var rangeDate;
@@ -357,9 +356,11 @@ ScheduleCreationPopup.prototype._onClickSaveSchedule = function(target) {
     }
 
     title = domutil.get(cssPrefix + 'schedule-title');
+    requestByEl = domutil.get(cssPrefix + 'schedule-request-by');
     endDateEl = domutil.get(cssPrefix + 'schedule-end-date');
 
     requestAtValue = this.createdDatePicker.getDate();
+    requestBy = this._selectedRequestBy ? this._selectedRequestBy : null;
     startDateValue = this.rangePicker.getStartDate();
     endDateValue = this.rangePicker.getEndDate();
     isValidDateRange = startDateValue && endDateValue;
@@ -367,9 +368,16 @@ ScheduleCreationPopup.prototype._onClickSaveSchedule = function(target) {
     startDate = startDateValue ? new TZDate(startDateValue) : null;
     endDate = endDateValue ? new TZDate(endDateValue) : null;
 
-    if (!this._validateForm(title, startDate, endDate)) {
+    if (!this._validateForm({
+        title: title,
+        requestBy: requestBy,
+        startDate: startDate,
+        endDate: endDate
+    })) {
         if (!title.value) {
             title.focus();
+        } else if (!requestBy) {
+            requestByEl.focus();
         } else if (!endDateEl.value) {
             endDateEl.focus();
         }
@@ -388,7 +396,7 @@ ScheduleCreationPopup.prototype._onClickSaveSchedule = function(target) {
         end: isValidDateRange ? rangeDate.end : null,
         isAllDay: isAllDay,
         additionalOptionId: this._selectedAdditionalOption ? this._selectedAdditionalOption.id : null,
-        requestBy: this._selectedRequestBy ? this._selectedRequestBy : null
+        requestBy: requestBy
     };
 
     if (this._isEditMode) {
@@ -858,13 +866,16 @@ ScheduleCreationPopup.prototype.setCalendars = function(calendars) {
 
 /**
  * Validate the form
- * @param {string} title title of then entered schedule
- * @param {TZDate} startDate start date time from range picker
- * @param {TZDate} endDate end date time from range picker
+ * @param {object} input {title: string, startDate: TZDate, endDate: TZDate} that need to validated
  * @returns {boolean} Returns false if the form is not valid for submission.
  */
-ScheduleCreationPopup.prototype._validateForm = function(title, startDate, endDate) {
-    if (!title.value) {
+ScheduleCreationPopup.prototype._validateForm = function(input) {
+    var title = input.title,
+        requestBy = input.requestBy,
+        startDate = input.startDate,
+        endDate = input.endDate;
+
+    if (!title.value || !requestBy) {
         return false;
     }
 
