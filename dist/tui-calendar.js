@@ -1,6 +1,6 @@
 /*!
  * TOAST UI Calendar
- * @version 1.15.2 | Thu Feb 17 2022
+ * @version 1.15.2 | Fri Feb 18 2022
  * @author NHN FE Development Lab <dl_javascript@nhn.com>
  * @license MIT
  */
@@ -22547,7 +22547,7 @@ ScheduleCreationPopup.prototype._selectDropdownMenuItem = function(target) {
     }
 
     bgColor = domutil.find('.' + iconClassName, selectedItem).style.backgroundColor || 'transparent';
-    title = domutil.find('.' + contentClassName, selectedItem).innerHTML;
+    title = domutil.find('.' + contentClassName, selectedItem).innerText;
 
     dropdown = domutil.closest(selectedItem, config.classname('.dropdown'));
     dropdownBtn = domutil.find(config.classname('.dropdown-button'), dropdown);
