@@ -231,7 +231,7 @@ ScheduleCreationPopup.prototype._selectDropdownMenuItem = function(target) {
     }
 
     bgColor = domutil.find('.' + iconClassName, selectedItem).style.backgroundColor || 'transparent';
-    title = domutil.find('.' + contentClassName, selectedItem).innerHTML;
+    title = domutil.find('.' + contentClassName, selectedItem).innerText;
 
     dropdown = domutil.closest(selectedItem, config.classname('.dropdown'));
     dropdownBtn = domutil.find(config.classname('.dropdown-button'), dropdown);

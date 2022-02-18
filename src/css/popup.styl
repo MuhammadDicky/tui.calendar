@@ -132,6 +132,7 @@
     text-overflow: ellipsis
     overflow: hidden
     top: -1px
+    white-space: nowrap
 
 .{css-prefix}popup-section-item input
     border: none
@@ -463,6 +464,12 @@ input[type='checkbox'].{css-prefix}checkbox-round + span
   vertical-align: middle
   display: inline-block
   margin-top: -7px
+
+.{css-prefix}dropdown-menu-item .{css-prefix}content
+  width: 139px
+  white-space: nowrap
+  overflow: hidden !important
+  text-overflow: ellipsis
 
 /* override tui-date-picker */
 .tui-datepicker
