@@ -727,7 +727,9 @@ Calendar.prototype._initialize = function(options) {
             timezones: options.timezone && options.timezone.zones ? options.timezone.zones : [],
             disableDblClick: false,
             disableClick: false,
-            isReadOnly: false
+            isReadOnly: false,
+            currentDateOnSingleClick: true,
+            currentDateOnDoubleClick: true
         },
         options
     );

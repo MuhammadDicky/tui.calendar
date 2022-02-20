@@ -71,6 +71,16 @@ function MonthCreation(dragHandler, monthView, baseController, options) {
      */
     this._disableClick = options.disableClick;
 
+    /**
+     * @type {boolean}
+     */
+    this._currentDateOnSingleClick = options.currentDateOnSingleClick;
+
+    /**
+     * @type {boolean}
+     */
+    this._currentDateOnDoubleClick = options.currentDateOnDoubleClick;
+
     dragHandler.on('dragStart', this._onDragStart, this);
     dragHandler.on('click', this._onClick, this);
 
@@ -102,20 +112,31 @@ MonthCreation.prototype.destroy = function() {
  * @param {object} eventData - cache data from single dragging session
  */
 MonthCreation.prototype._createSchedule = function(eventData) {
+    var requestAt = util.isExisty(eventData.requestAt) ?
+        eventData.requestAt : eventData.start;
+    var manualSet = util.isObject(eventData.manualSet) ? eventData.manualSet : null;
+
+    if (manualSet && util.isExisty(eventData.requestAt)) {
+        requestAt = manualSet.requestAt;
+    }
+
     /**
      * @event {MonthCreation#beforeCreateSchedule}
      * @type {object}
      * @property {boolean} isAllDay - whether schedule is fired in allday view area?
+     * @property {Date} requestAt - select request time
      * @property {Date} start - select start time
      * @property {Date} end - select end time
+     * @property {object.any} manualSet - object that user manually setup
      * @property {TimeCreationGuide} guide - TimeCreationGuide instance
      * @property {string} triggerEventName - event name
      */
     this.fire('beforeCreateSchedule', {
         isAllDay: eventData.isAllDay,
-        requestAt: eventData.requestAt,
+        requestAt: requestAt,
         start: eventData.start,
         end: eventData.end,
+        manualSet: manualSet,
         guide: this.guide.guide,
         triggerEventName: eventData.triggerEvent
     });
@@ -238,7 +259,10 @@ MonthCreation.prototype._onDragEnd = function(dragEndEvent) {
  * @param {MouseEvent} e - Native MouseEvent
  */
 MonthCreation.prototype._onDblClick = function(e) {
-    var eventData, range;
+    var eventData,
+        range,
+        requestAt = null,
+        now = new TZDate(Date.now());
 
     if (!isElementWeekdayGrid(e.target)) {
         return;
@@ -250,7 +274,16 @@ MonthCreation.prototype._onDblClick = function(e) {
 
     range = this._adjustStartAndEndTime(new TZDate(eventData.date), new TZDate(eventData.date));
 
+    if (this._currentDateOnDoubleClick === true) {
+        requestAt = eventData.date;
+
+        requestAt.setHours(now.getHours());
+        requestAt.setMinutes(now.getMinutes());
+        requestAt.setSeconds(now.getSeconds());
+    }
+
     this._createSchedule({
+        requestAt: requestAt,
         start: range.start,
         end: range.end,
         isAllDay: false,
@@ -268,6 +301,7 @@ MonthCreation.prototype._onDblClick = function(e) {
 MonthCreation.prototype._onClick = function(e) {
     var self = this;
     var eventData;
+    var now = new TZDate(Date.now());
 
     if (!isElementWeekdayGrid(e.target) || this._disableClick) {
         return;
@@ -279,6 +313,12 @@ MonthCreation.prototype._onClick = function(e) {
     setTimeout(function() {
         if (self._requestOnClick) {
             self.fire('monthCreationClick', eventData);
+
+            if (self._currentDateOnSingleClick === true) {
+                eventData.date.setHours(now.getHours());
+                eventData.date.setMinutes(now.getMinutes());
+                eventData.date.setSeconds(now.getSeconds());
+            }
 
             self._createSchedule({
                 requestAt: eventData.date,
@@ -326,15 +366,27 @@ MonthCreation.prototype.invokeCreationClick = function(schedule) {
     var eventData = {
         model: schedule
     };
-
-    this.fire('monthCreationClick', eventData);
-
-    this._createSchedule({
+    var scheduleEventData = {
         start: schedule.start,
         end: schedule.end,
         isAllDay: schedule.isAllDay,
         triggerEvent: 'manual'
-    });
+    };
+
+    if (schedule.isManualSet === true) {
+        scheduleEventData.manualSet = {
+            id: schedule.id,
+            calendarId: schedule.calendarId,
+            title: schedule.title,
+            requestBy: schedule.requestBy,
+            requestAt: schedule.requestAt,
+            additionalOptionId: schedule.additionalOptionId
+        };
+    }
+
+    this.fire('monthCreationClick', eventData);
+
+    this._createSchedule(scheduleEventData);
 };
 
 /**

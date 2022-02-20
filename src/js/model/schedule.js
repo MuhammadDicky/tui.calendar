@@ -246,6 +246,12 @@ function Schedule() {
      */
     this.requestBy = null;
 
+    /**
+     * is property set manual by user
+     * @type {boolean}
+     */
+    this.isManualSet = false;
+
     // initialize model id
     util.stamp(this);
 }
@@ -310,17 +316,19 @@ Schedule.prototype.init = function(options) {
     this.comingDuration = options.comingDuration || 0;
     this.state = options.state || '';
     this.additionalOptionId = util.isExisty(options.additionalOptionId) ? options.additionalOptionId : null;
+    this.isManualSet = util.isExisty(options.isManualSet) ? options.isManualSet : this.isManualSet;
 
     if (util.isExisty(options.requestBy) && typeof options.requestBy === 'object') {
         this.requestBy = {
             id: options.requestBy.id,
             text: options.requestBy.text,
-            full: options.requestBy.full
+            full: util.isExisty(options.requestBy.full) ?
+                options.requestBy.full : null
         };
     }
 
     // custom property
-    this.requestAt = options.requestAt ? new TZDate(options.requestAt) : null;
+    this.requestAt = options.requestAt ? new TZDate(options.requestAt) : new TZDate(Date.now());
 
     if (this.requestAt && !options.start && !options.end) {
         options.start = options.requestAt;

@@ -442,6 +442,11 @@ ScheduleCreationPopup.prototype.render = function(viewModel) {
         guideElements = this._getGuideElements(this.guide);
         boxElement = guideElements.length ? guideElements[0] : null;
     }
+
+    if (util.isObject(viewModel.manualSet)) {
+        viewModel = this._makeManualModeData(viewModel);
+    }
+
     layer.setContent(tmpl(viewModel));
 
     // NOTE: Setting default start/end time when editing all-day schedule first time.
@@ -496,7 +501,7 @@ ScheduleCreationPopup.prototype._makeEditModeData = function(viewModel) {
             });
     }
 
-    if (util.isExisty(requestBy)) {
+    if (util.isExisty(requestBy) && util.isObject(requestBy)) {
         this._selectedRequestBy = requestBy;
     }
 
@@ -518,6 +523,55 @@ ScheduleCreationPopup.prototype._makeEditModeData = function(viewModel) {
         showRequestByInput: viewModel.showRequestByInput,
         isEditMode: this._isEditMode
     };
+};
+
+/**
+ * Make view model for manual data set from user
+ * @param {object} viewModel - original view model from 'beforeCreateEditPopup'
+ * @returns {object} - view model
+ */
+ScheduleCreationPopup.prototype._makeManualModeData = function(viewModel) {
+    var manualSet, additionalOptions, id, additionalOptionId, calendarId, title, requestBy;
+
+    if (!util.isObject(viewModel.manualSet)) {
+        return viewModel;
+    }
+
+    manualSet = viewModel.manualSet;
+    additionalOptions = this.additionalOptions;
+    id = manualSet.id;
+    additionalOptionId = manualSet.additionalOptionId;
+    calendarId = manualSet.calendarId;
+    title = manualSet.title;
+    requestBy = manualSet.requestBy;
+
+    if (util.isExisty(calendarId) && calendarId !== '') {
+        this._selectedCal = common.find(this.calendars, function(cal) {
+            return cal.id === calendarId;
+        });
+    }
+
+    if (additionalOptions.isValid && util.isExisty(additionalOptionId) && additionalOptionId !== '') {
+        additionalOptionId = common.find(additionalOptions.options, function(option) {
+            return option.id === additionalOptionId;
+        });
+
+        if (util.isExisty(additionalOptionId)) {
+            this._selectedAdditionalOption = additionalOptionId;
+        }
+    }
+
+    if (util.isExisty(requestBy) && util.isObject(requestBy)) {
+        this._selectedRequestBy = requestBy;
+    }
+
+    return util.extend(viewModel, {
+        id: id,
+        selectedCal: this._selectedCal,
+        title: title,
+        selectedAdditionalOption: this._selectedAdditionalOption,
+        requestBy: this._selectedRequestBy
+    });
 };
 
 ScheduleCreationPopup.prototype._setDatepickerState = function(newState) {
