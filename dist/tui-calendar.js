@@ -1,6 +1,6 @@
 /*!
  * TOAST UI Calendar
- * @version 1.15.2 | Fri Feb 18 2022
+ * @version 1.15.2 | Sun Feb 20 2022
  * @author NHN FE Development Lab <dl_javascript@nhn.com>
  * @license MIT
  */
@@ -11510,7 +11510,9 @@ Calendar.prototype._initialize = function(options) {
             timezones: options.timezone && options.timezone.zones ? options.timezone.zones : [],
             disableDblClick: false,
             disableClick: false,
-            isReadOnly: false
+            isReadOnly: false,
+            currentDateOnSingleClick: true,
+            currentDateOnDoubleClick: true
         },
         options
     );
@@ -15926,6 +15928,16 @@ function MonthCreation(dragHandler, monthView, baseController, options) {
      */
     this._disableClick = options.disableClick;
 
+    /**
+     * @type {boolean}
+     */
+    this._currentDateOnSingleClick = options.currentDateOnSingleClick;
+
+    /**
+     * @type {boolean}
+     */
+    this._currentDateOnDoubleClick = options.currentDateOnDoubleClick;
+
     dragHandler.on('dragStart', this._onDragStart, this);
     dragHandler.on('click', this._onClick, this);
 
@@ -15957,20 +15969,31 @@ MonthCreation.prototype.destroy = function() {
  * @param {object} eventData - cache data from single dragging session
  */
 MonthCreation.prototype._createSchedule = function(eventData) {
+    var requestAt = util.isExisty(eventData.requestAt) ?
+        eventData.requestAt : eventData.start;
+    var manualSet = util.isObject(eventData.manualSet) ? eventData.manualSet : null;
+
+    if (manualSet && util.isExisty(eventData.requestAt)) {
+        requestAt = manualSet.requestAt;
+    }
+
     /**
      * @event {MonthCreation#beforeCreateSchedule}
      * @type {object}
      * @property {boolean} isAllDay - whether schedule is fired in allday view area?
+     * @property {Date} requestAt - select request time
      * @property {Date} start - select start time
      * @property {Date} end - select end time
+     * @property {object.any} manualSet - object that user manually setup
      * @property {TimeCreationGuide} guide - TimeCreationGuide instance
      * @property {string} triggerEventName - event name
      */
     this.fire('beforeCreateSchedule', {
         isAllDay: eventData.isAllDay,
-        requestAt: eventData.requestAt,
+        requestAt: requestAt,
         start: eventData.start,
         end: eventData.end,
+        manualSet: manualSet,
         guide: this.guide.guide,
         triggerEventName: eventData.triggerEvent
     });
@@ -16093,7 +16116,10 @@ MonthCreation.prototype._onDragEnd = function(dragEndEvent) {
  * @param {MouseEvent} e - Native MouseEvent
  */
 MonthCreation.prototype._onDblClick = function(e) {
-    var eventData, range;
+    var eventData,
+        range,
+        requestAt = null,
+        now = new TZDate(Date.now());
 
     if (!isElementWeekdayGrid(e.target)) {
         return;
@@ -16105,7 +16131,16 @@ MonthCreation.prototype._onDblClick = function(e) {
 
     range = this._adjustStartAndEndTime(new TZDate(eventData.date), new TZDate(eventData.date));
 
+    if (this._currentDateOnDoubleClick === true) {
+        requestAt = eventData.date;
+
+        requestAt.setHours(now.getHours());
+        requestAt.setMinutes(now.getMinutes());
+        requestAt.setSeconds(now.getSeconds());
+    }
+
     this._createSchedule({
+        requestAt: requestAt,
         start: range.start,
         end: range.end,
         isAllDay: false,
@@ -16123,6 +16158,7 @@ MonthCreation.prototype._onDblClick = function(e) {
 MonthCreation.prototype._onClick = function(e) {
     var self = this;
     var eventData;
+    var now = new TZDate(Date.now());
 
     if (!isElementWeekdayGrid(e.target) || this._disableClick) {
         return;
@@ -16134,6 +16170,12 @@ MonthCreation.prototype._onClick = function(e) {
     setTimeout(function() {
         if (self._requestOnClick) {
             self.fire('monthCreationClick', eventData);
+
+            if (self._currentDateOnSingleClick === true) {
+                eventData.date.setHours(now.getHours());
+                eventData.date.setMinutes(now.getMinutes());
+                eventData.date.setSeconds(now.getSeconds());
+            }
 
             self._createSchedule({
                 requestAt: eventData.date,
@@ -16181,15 +16223,27 @@ MonthCreation.prototype.invokeCreationClick = function(schedule) {
     var eventData = {
         model: schedule
     };
-
-    this.fire('monthCreationClick', eventData);
-
-    this._createSchedule({
+    var scheduleEventData = {
         start: schedule.start,
         end: schedule.end,
         isAllDay: schedule.isAllDay,
         triggerEvent: 'manual'
-    });
+    };
+
+    if (schedule.isManualSet === true) {
+        scheduleEventData.manualSet = {
+            id: schedule.id,
+            calendarId: schedule.calendarId,
+            title: schedule.title,
+            requestBy: schedule.requestBy,
+            requestAt: schedule.requestAt,
+            additionalOptionId: schedule.additionalOptionId
+        };
+    }
+
+    this.fire('monthCreationClick', eventData);
+
+    this._createSchedule(scheduleEventData);
 };
 
 /**
@@ -20370,6 +20424,12 @@ function Schedule() {
      */
     this.requestBy = null;
 
+    /**
+     * is property set manual by user
+     * @type {boolean}
+     */
+    this.isManualSet = false;
+
     // initialize model id
     util.stamp(this);
 }
@@ -20434,17 +20494,19 @@ Schedule.prototype.init = function(options) {
     this.comingDuration = options.comingDuration || 0;
     this.state = options.state || '';
     this.additionalOptionId = util.isExisty(options.additionalOptionId) ? options.additionalOptionId : null;
+    this.isManualSet = util.isExisty(options.isManualSet) ? options.isManualSet : this.isManualSet;
 
     if (util.isExisty(options.requestBy) && typeof options.requestBy === 'object') {
         this.requestBy = {
             id: options.requestBy.id,
             text: options.requestBy.text,
-            full: options.requestBy.full
+            full: util.isExisty(options.requestBy.full) ?
+                options.requestBy.full : null
         };
     }
 
     // custom property
-    this.requestAt = options.requestAt ? new TZDate(options.requestAt) : null;
+    this.requestAt = options.requestAt ? new TZDate(options.requestAt) : new TZDate(Date.now());
 
     if (this.requestAt && !options.start && !options.end) {
         options.start = options.requestAt;
@@ -22758,6 +22820,11 @@ ScheduleCreationPopup.prototype.render = function(viewModel) {
         guideElements = this._getGuideElements(this.guide);
         boxElement = guideElements.length ? guideElements[0] : null;
     }
+
+    if (util.isObject(viewModel.manualSet)) {
+        viewModel = this._makeManualModeData(viewModel);
+    }
+
     layer.setContent(tmpl(viewModel));
 
     // NOTE: Setting default start/end time when editing all-day schedule first time.
@@ -22812,7 +22879,7 @@ ScheduleCreationPopup.prototype._makeEditModeData = function(viewModel) {
             });
     }
 
-    if (util.isExisty(requestBy)) {
+    if (util.isExisty(requestBy) && util.isObject(requestBy)) {
         this._selectedRequestBy = requestBy;
     }
 
@@ -22834,6 +22901,55 @@ ScheduleCreationPopup.prototype._makeEditModeData = function(viewModel) {
         showRequestByInput: viewModel.showRequestByInput,
         isEditMode: this._isEditMode
     };
+};
+
+/**
+ * Make view model for manual data set from user
+ * @param {object} viewModel - original view model from 'beforeCreateEditPopup'
+ * @returns {object} - view model
+ */
+ScheduleCreationPopup.prototype._makeManualModeData = function(viewModel) {
+    var manualSet, additionalOptions, id, additionalOptionId, calendarId, title, requestBy;
+
+    if (!util.isObject(viewModel.manualSet)) {
+        return viewModel;
+    }
+
+    manualSet = viewModel.manualSet;
+    additionalOptions = this.additionalOptions;
+    id = manualSet.id;
+    additionalOptionId = manualSet.additionalOptionId;
+    calendarId = manualSet.calendarId;
+    title = manualSet.title;
+    requestBy = manualSet.requestBy;
+
+    if (util.isExisty(calendarId) && calendarId !== '') {
+        this._selectedCal = common.find(this.calendars, function(cal) {
+            return cal.id === calendarId;
+        });
+    }
+
+    if (additionalOptions.isValid && util.isExisty(additionalOptionId) && additionalOptionId !== '') {
+        additionalOptionId = common.find(additionalOptions.options, function(option) {
+            return option.id === additionalOptionId;
+        });
+
+        if (util.isExisty(additionalOptionId)) {
+            this._selectedAdditionalOption = additionalOptionId;
+        }
+    }
+
+    if (util.isExisty(requestBy) && util.isObject(requestBy)) {
+        this._selectedRequestBy = requestBy;
+    }
+
+    return util.extend(viewModel, {
+        id: id,
+        selectedCal: this._selectedCal,
+        title: title,
+        selectedAdditionalOption: this._selectedAdditionalOption,
+        requestBy: this._selectedRequestBy
+    });
 };
 
 ScheduleCreationPopup.prototype._setDatepickerState = function(newState) {
